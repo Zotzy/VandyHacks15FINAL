@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
         //final MyJavaScriptInterface myJavaScriptInterface = new MyJavaScriptInterface(this);
         //myWebView.addJavascriptInterface(myJavaScriptInterface, "forward");
 
-        myWebView.loadUrl("http://stevensheffey.me:9000/streetview");
+        myWebView.loadUrl("http://www.tunaroundandseacom.domain.com");
 
     }
 
