@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Street View events</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+#floating-panel {
+  position: absolute;
+  top: 10px;
+  left: 25%;
+  z-index: 5;
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #999;
+  text-align: center;
+  font-family: 'Roboto','sans-serif';
+  line-height: 30px;
+  padding-left: 10px;
+}
+
+      #pano {
+        width: 50%;
+        height: 100%;
+        float: left;
+      }
+      #floating-panel {
+        width: 45%;
+        height: 100%;
+        float: right;
+        text-align: left;
+        overflow: auto;
+        position: static;
+        border: 0px solid #999;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJJ3BMM7Fx7qMT0kfcaBHGU1kMsYN0z2w&signed_in=true"></script>
+      <script>
+      function forward(){
+          panorama.setPosition({lat: panorama.getPosition().lat()+0.0002*Math.sin(panorama.getPov().heading) ,
+                                lng: panorama.getPosition().lng()+0.0002*Math.cos(panorama.getPov().heading)} );
+
+    }
+          function backward(){
+              panorama.setPosition({lat: panorama.getPosition().lat()-0.0002*Math.sin(panorama.getPov().heading),
+                                    lng: panorama.getPosition().lng()-0.0002*Math.cos(panorama.getPov().heading)} );
+          }
+          function povmanip(){
+              panorama.setPov({
+                  heading: panorama.getPov().heading+10,
+                  pitch: panorama.getPov().pitch,
+              })
+          }
+ //http://stackoverflow.com/questions/6882965/google-maps-api-v3-get-map-by-address
+ function codeAddress() {
+  var address = document.getElementById('address').value;
+  geocoder.geocode( { 'address': address}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+      //panorama.setCenter(results[0].geometry.location);
+        alert(results[0].geometry.location.lat() +" "+results[0].geometry.location.lng());
+        panorama.setPosition({lat: results[0].geometry.location.lat(),
+                              lng: results[0].geometry.location.lng()} );
+/*      var marker = new google.maps.Marker({
+          map: map,
+          position: results[0].geometry.location
+      });*/
+    }else {
+      alert('Geocode was not successful for the following reason: ' + status);
+    }
+  });
+}
+      </script>
+  </head>
+  <body>
+    <div id="pano"></div>
+    <div id="floating-panel">
+    <table>
+        <tr>
+        <td><button id="thing" onclick="forward()">Thing</button></td>
+        <td><button id="thing" onclick="backward()">Thing</button></td>
+        <td><button id="thing" onclick="povmanip()">Thing</button></td>
+            <td><input type="text" id="address"/></td>
+            <td><button id="nonimportant" onclick="codeAddress()">address</td>
+        </tr>
+      <table id="links_table"></table>
+    </table>
+    </div>
+    <script>
+    var geocoder;
+    var panorama;
+function initPano() {
+    geocoder = new google.maps.Geocoder();
+   panorama = new google.maps.StreetViewPanorama(
+      document.getElementById('pano'), {
+          //35.856387 -86.36796800000002
+        position: {lat: 35, lng: 86},
+        pov: {
+          heading: 270,
+          pitch: 0
+        },
+        visible: true,
+        linksControl: true,
+        panControl: false,
+        enableCloseButton: false
+  });
+
+  panorama.addListener('pano_changed', function() {
+      var panoCell = document.getElementById('pano-cell');
+      panoCell.innerHTML = panorama.getPano();
+  });
+
+  panorama.addListener('links_changed', function() {
+      var linksTable = document.getElementById('links_table');
+      while (linksTable.hasChildNodes()) {
+        linksTable.removeChild(linksTable.lastChild);
+      }
+      var links = panorama.getLinks();
+      for (var i in links) {
+        var row = document.createElement('tr');
+        linksTable.appendChild(row);
+        var labelCell = document.createElement('td');
+        labelCell.innerHTML = '<b>Link: ' + i + '</b>';
+        var valueCell = document.createElement('td');
+        valueCell.innerHTML = links[i].description;
+        linksTable.appendChild(labelCell);
+        linksTable.appendChild(valueCell);
+      }
+  });
+
+/*    panorama.addListener('thing', function(){
+      //panorama.setPosition(panorama.getPosition());
+        alert(panorama.getPosition());
+    });*/
+  panorama.addListener('position_changed', function() {
+      var positionCell = document.getElementById('position-cell');
+      positionCell.firstChild.nodeValue = panorama.getPosition() + '';
+  });
+
+  panorama.addListener('pov_changed', function() {
+      var headingCell = document.getElementById('heading-cell');
+      var pitchCell = document.getElementById('pitch-cell');
+      headingCell.firstChild.nodeValue = panorama.getPov().heading + '';
+      pitchCell.firstChild.nodeValue = panorama.getPov().pitch + '';
+  });
+}
+
+
+
+    </script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJJ3BMM7Fx7qMT0kfcaBHGU1kMsYN0z2w&signed_in=true&callback=initPano"
+        async defer>
+    </script>
+  </body>
+</html>
